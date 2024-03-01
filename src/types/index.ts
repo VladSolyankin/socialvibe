@@ -5,7 +5,7 @@ type IUser = {
     email: string,
     imageUrl: string,
     bio: string
-}
+};
 
 type IAuthContext = {
     user: IUser,
@@ -14,4 +14,4 @@ type IAuthContext = {
     isAuthenticated: boolean,
     setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>,
     checkUserAuth: () => Promise<boolean>
-}
+};

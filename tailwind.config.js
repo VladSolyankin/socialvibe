@@ -17,6 +17,13 @@ module.exports = {
       },
     },
     extend: {
+      theme: {
+        screens: {
+          'laptop': '1300px',
+          'tablet': '640px',
+          'phone': '480px'
+        }
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
