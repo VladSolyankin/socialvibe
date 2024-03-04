@@ -5,28 +5,27 @@ import { MdOutlinePhotoSizeSelectActual } from 'react-icons/md';
 import { PiHeadphones } from 'react-icons/pi';
 import { RiHomeSmile2Line, RiMessage3Line } from 'react-icons/ri';
 
-export const PageLayout = ({ children }: { children: React.ReactNode }) => {
+export const DesktopLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className='fex justify-start w-screen'>
-      <div className='flex justify-between items-center mx-8 my-2'>
-        <img
-          className='h-12 h-12 rounded-lg'
-          src='/assets/socialvibe_logo.svg'
-          alt='SocialVibe logo picture'
-        />
-        <div className='flex'>
-          <div className='flex flex-col items-center'>
+    <div className='w-screen'>
+      <div className='flex m-8 min-h-screen'>
+        <div className='basis-1/6'>
+          <div className='flex flex-col items-start px-2'>
+            <img
+              className='h-12 h-12 rounded-lg'
+              src='/assets/socialvibe_logo.svg'
+              alt='SocialVibe logo picture'
+            />
+          </div>
+          <div className='flex items-center my-5 gap-3 p-2'>
             <img
               className='w-10 h-10'
               src={true ? '/assets/default_profile.png' : ''}
               alt=''
             />
-            <Label className='text-sm'>Ваш профиль</Label>
+            <Label className='text-sm'>Профиль</Label>
           </div>
-        </div>
-      </div>
-      <div className='flex m-8 min-h-screen'>
-        <div className='basis-1/6'>
+
           <ul className='flex flex-col w-[150px]'>
             <li className='max-w-max p-2 flex gap-2 hover:bg-blue-400 hover:rounded-xl'>
               <RiHomeSmile2Line />
