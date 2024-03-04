@@ -1,9 +1,9 @@
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from './components/providers/ThemeProvider';
+import './globals.css';
+import { Home } from './pages/Home';
 import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
-import './globals.css';
-import { ThemeProvider } from './components/providers/ThemeProvider';
-import { Home } from './pages/Home';
 
 const routes = [
   { path: '/sign_in', element: <SignIn /> },
