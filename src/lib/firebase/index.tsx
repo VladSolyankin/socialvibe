@@ -1,6 +1,54 @@
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+} from 'firebase/firestore';
 import { db, storage, auth } from './config';
 
+export const createUserDocument = async (
+  userId: string | undefined,
+  fullName: string,
+  userEmail: string,
+  birthDate: string
+) => {
+  try {
+    await setDoc(doc(db, `users/${userId}`), {
+      avatar_url: '',
+      email: userEmail,
+      full_name: fullName,
+      info: {
+        birth_date: birthDate,
+        city: '',
+        phone: '',
+        status: '',
+      },
+      is_online: false,
+      friends: [],
+      photos: {
+        albums: [],
+        user_images: [],
+      },
+      post_ids: [],
+    });
+
+    await addDoc(collection(db, `users/${userId}/chats`), {});
+
+    await addDoc(collection(db, `users/${userId}/posts`), {});
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 // Профиль
+export const getCurrentUser = async (userId: string) => {
+  const currentUser = await getDoc(doc(db, `users/${userId}`));
+
+  return currentUser.data();
+};
+
 export const getUserProfileInfo = () => {};
 
 export const getUserFriends = () => {};

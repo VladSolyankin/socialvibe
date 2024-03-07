@@ -1,4 +1,4 @@
-import { useLoading } from '@/hooks';
+import { useLoading } from '@/hooks/useLoading';
 import { Button } from '../ui/button';
 import { Icons } from '../ui/icons';
 import { Input } from '../ui/input';
@@ -15,6 +15,9 @@ import {
   FormItem,
   FormMessage,
 } from '../ui/form';
+import { createUserDocument } from '@/lib/firebase';
+import { auth } from '@/lib/firebase/config';
+import { useUserSignUp } from '@/lib/firebase/auth';
 
 const formSchema = z
   .object({
@@ -46,8 +49,9 @@ export const SignUpForm = () => {
     },
   });
 
-  const onFormSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
+    await useUserSignUp(values.email, values.password);
+    await createUserDocument(auth.currentUser?.uid, values.email, '', '');
   };
   return (
     <Form {...form}>

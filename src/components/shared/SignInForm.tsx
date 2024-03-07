@@ -5,7 +5,9 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import { useLoading } from '@/hooks';
+import { useUserContext } from '@/context/AuthContext';
+import { useLoading } from '@/hooks/useLoading';
+import { useUserSignIn } from '@/lib/firebase/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +32,7 @@ const formSchema = z.object({
 export const SignInForm = () => {
   const { isLoading, onSubmit } = useLoading();
   const pageNavigator = useNavigate();
+  const { isAuthenticated } = useUserContext();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,7 +43,10 @@ export const SignInForm = () => {
   });
 
   const onFormSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(`Form values: ${values}`);
+    useUserSignIn(values.email, values.password);
+    if (isAuthenticated) {
+      pageNavigator('/');
+    }
   };
 
   return (

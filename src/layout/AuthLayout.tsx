@@ -1,13 +1,11 @@
-import React from 'react'
+import { useUserContext } from '@/context/AuthContext';
+import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 export const AuthLayout = () => {
-    const { isAuthenticated } = useUserContext();
+  const { isAuthenticated } = useUserContext();
 
-    return (
-        <div>
-            {
-                isAuthenticated ? "" : ""
-            }
-        </div>
-    )
-}
+  return (
+    <>{isAuthenticated ? <Navigate to='/' /> : <Navigate to='/sign_in' />}</>
+  );
+};
