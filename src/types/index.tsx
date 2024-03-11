@@ -14,7 +14,10 @@ type IUser = {
 
 type IUserChats = {};
 
-type IUserPhotos = {};
+type IUserPhotos = {
+  title: string;
+  url: string;
+};
 
 type IUserPosts = {};
 

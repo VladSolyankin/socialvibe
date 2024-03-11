@@ -18,6 +18,7 @@ import {
 import { createUserDocument } from '@/lib/firebase';
 import { auth } from '@/lib/firebase/config';
 import { useUserSignUp } from '@/lib/firebase/auth';
+import { useToast } from '../ui/use-toast';
 
 const formSchema = z
   .object({
@@ -39,6 +40,7 @@ const formSchema = z
 export const SignUpForm = () => {
   const { isLoading, onSubmit } = useLoading();
   const pageNavigator = useNavigate();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,6 +54,11 @@ export const SignUpForm = () => {
   const onFormSubmit = async (values: z.infer<typeof formSchema>) => {
     await useUserSignUp(values.email, values.password);
     await createUserDocument(auth.currentUser?.uid, values.email, '', '');
+    pageNavigator('/sign_in');
+    toast({
+      title: '✅ Регистрация успешна!',
+      description: 'Войдите в систему, используя ваши данные',
+    });
   };
   return (
     <Form {...form}>

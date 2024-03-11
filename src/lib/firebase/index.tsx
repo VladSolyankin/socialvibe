@@ -8,6 +8,8 @@ import {
 } from 'firebase/firestore';
 import { db, storage, auth } from './config';
 
+const storageUserId = localStorage.getItem('userAuth');
+
 export const createUserDocument = async (
   userId: string | undefined,
   fullName: string,
@@ -110,7 +112,13 @@ export const editUserMessage = () => {};
 
 export const getUserAlbums = () => {};
 
-export const getUserImages = () => {};
+export const getUserImages = async () => {
+  const userImages = await getDoc(doc(db, `users/${storageUserId}`));
+
+  const data = (await userImages.data()?.photos.user_images) as IUserPhotos[];
+
+  return data;
+};
 
 export const getUserAlbumImages = () => {};
 

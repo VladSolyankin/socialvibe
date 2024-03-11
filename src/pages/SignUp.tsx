@@ -1,4 +1,5 @@
 import { SignUpForm } from '@/components/shared/SignUpForm';
+import { Toaster } from '@/components/ui/toaster';
 
 export const SignUp = () => {
   return (
@@ -13,6 +14,7 @@ export const SignUp = () => {
         </div>
         <SignUpForm />
       </div>
+      <Toaster />
     </div>
   );
 };

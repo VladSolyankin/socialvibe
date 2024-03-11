@@ -7,7 +7,6 @@ import {
 } from '@/components/ui/form';
 import { useUserContext } from '@/context/AuthContext';
 import { useLoading } from '@/hooks/useLoading';
-import { useUserSignIn } from '@/lib/firebase/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +16,9 @@ import { Icons } from '../ui/icons';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
+import { toast } from '../ui/use-toast';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase/config';
 
 const formSchema = z.object({
   email: z
@@ -34,6 +36,11 @@ export const SignInForm = () => {
   const pageNavigator = useNavigate();
   const { isAuthenticated } = useUserContext();
 
+  if (isAuthenticated) {
+    console.log(`${localStorage.getItem('userAuth')} logged in`);
+    pageNavigator('/');
+  }
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,11 +49,25 @@ export const SignInForm = () => {
     },
   });
 
+  const useUserSignIn = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password)
+      .then(userCredentials => {
+        localStorage.setItem('userAuth', userCredentials.user.uid);
+        localStorage.setItem('isLogged', 'true');
+        pageNavigator('/');
+        console.log(`${userCredentials.user.uid} user logged`);
+      })
+      .catch(err => {
+        toast({
+          title: '❌ Вход не удался',
+          description: 'Проверьте корректность введённых данных',
+        });
+        console.log('Ошибка входа: ', err.message);
+      });
+  };
+
   const onFormSubmit = (values: z.infer<typeof formSchema>) => {
     useUserSignIn(values.email, values.password);
-    if (isAuthenticated) {
-      pageNavigator('/');
-    }
   };
 
   return (

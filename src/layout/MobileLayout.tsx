@@ -1,11 +1,12 @@
 import { Label } from '@/components/ui/label';
-import React from 'react';
+import { Toaster } from '@/components/ui/toaster';
 import { AiOutlineWechat } from 'react-icons/ai';
 import { MdOutlinePhotoSizeSelectActual } from 'react-icons/md';
 import { PiHeadphones } from 'react-icons/pi';
 import { RiHomeSmile2Line, RiMessage3Line } from 'react-icons/ri';
+import { Outlet } from 'react-router-dom';
 
-export const MobileLayout = ({ children }: { children: React.ReactNode }) => {
+export const MobileLayout = () => {
   return (
     <div className='fex justify-start w-screen'>
       <div className='flex justify-between items-center mx-8 my-2'>
@@ -52,7 +53,7 @@ export const MobileLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <div className='w-full border-2 border-gray-600 rounded-xl'>
-          {children}
+          <Outlet />
         </div>
       </div>
     </div>

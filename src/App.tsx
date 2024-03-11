@@ -1,12 +1,16 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { useUserContext } from './context/AuthContext';
+import { Route, Routes } from 'react-router-dom';
+import { Toaster } from './components/ui/toaster';
 import './globals.css';
+import { DesktopLayout } from './layout/DesktopLayout';
+import { MobileLayout } from './layout/MobileLayout';
 import { AIBot } from './pages/AIBot';
 import { Chats } from './pages/Chats';
 import { Music } from './pages/Music';
+import { News } from './pages/News';
 import { Photos } from './pages/Photos';
 import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
+import { Profile } from './pages/Profile';
 
 const routes = [
   { path: '/sign_in', element: <SignIn /> },
@@ -18,25 +22,23 @@ const routes = [
   { path: '/ai_bot', element: <AIBot /> },
 ];
 
-const PrivateRoute = ({ element }) => {
-  const { isAuthenticated } = useUserContext();
-
-  return isAuthenticated ? element : <Navigate to='/sign_in' />;
-};
-
 function App() {
   return (
-    <div>
-      <Routes>
-        {routes.map(({ path, element }) => (
-          <Route
-            key={path}
-            path={path}
-            element={<PrivateRoute element={element} />}
-          />
-        ))}
-      </Routes>
-    </div>
+    <Routes>
+      <Route>
+        <Route path='sign_in' element={<SignIn />} />
+        <Route path='sign_up' element={<SignUp />} />
+      </Route>
+
+      <Route element={window.innerWidth ? <DesktopLayout /> : <MobileLayout />}>
+        <Route index element={<News />} />
+        <Route path='/photos' element={<Photos />} />
+        <Route path='/music' element={<Music />} />
+        <Route path='/chats' element={<Chats />} />
+      </Route>
+
+      <Route path='/profile' element={<Profile />} />
+    </Routes>
   );
 }
 
