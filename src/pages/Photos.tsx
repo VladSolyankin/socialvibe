@@ -22,15 +22,35 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label';
-import { useDropzone } from 'react-dropzone';
+import { FileWithPath, useDropzone } from 'react-dropzone';
 import { BiLandscape, BiSolidSave } from 'react-icons/bi';
+import { z } from 'zod';
+import { Form, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FormControl, FormField, FormItem } from '@/components/ui/form';
+
+const addImageFormSchema = z.object({
+  title: z.string().min(1, { message: 'Название не должно быть пустым' }),
+  image: z
+    .instanceof(File)
+    .refine(file => file.size < 1024 * 1024 * 8, {
+      message: 'Размер файла не должен превышать 5Мб',
+    })
+    .refine(
+      file =>
+        ['image/png', 'image/jpg', 'image/jpeg', 'image/svg'].includes(
+          file.type
+        ),
+      { message: 'Файл должен быть с расширением .png/jpg/jpeg/svg' }
+    ),
+});
 
 export const Photos = () => {
   const [userImages, setUserImages] = useState<Array<IUserPhotos>>([]);
   const [userAlbums, setUserAlbums] = useState<Array<IUserAlbum>>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFileSelected, setIsFileSelected] = useState(false);
-  const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFileURL, setSelectedFileURL] = useState('');
 
   useEffect(() => {
     const fetchUserImages = async () => {
@@ -41,15 +61,36 @@ export const Photos = () => {
     fetchUserImages();
   }, []);
 
-  const onAddButtonClick = () => setIsDialogOpen(true);
+  const addImageForm = useForm<z.infer<typeof addImageFormSchema>>({
+    resolver: zodResolver(addImageFormSchema),
+    defaultValues: {
+      title: '',
+      image: new File([], ''),
+    },
+  });
 
-  const onDrop = useCallback(files => {
-    console.log('работает');
+  const onDrop = useCallback((files: FileWithPath[]) => {
     setIsFileSelected(true);
-    console.log(files[0].path);
+    setSelectedFileURL(URL.createObjectURL(files[0]));
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.svg'],
+    },
+  });
+
+  const onAddDialogOpen = () => {
+    setIsDialogOpen(true);
+  };
+
+  const onAddDialogClose = () => {
+    if (!isDialogOpen) {
+      setIsFileSelected(false);
+      setSelectedFileURL('');
+    }
+  };
 
   return (
     <div className='relative'>
@@ -79,61 +120,87 @@ export const Photos = () => {
               ))}
             </CardContent>
           </Card>
+          <Form {...addImageForm}>
+            <Dialog onOpenChange={() => onAddDialogClose()}>
+              <DialogTrigger>
+                <Button
+                  type='submit'
+                  className='absolute top-5 right-5 flex gap-2'
+                  onClick={() => {
+                    onAddDialogOpen;
+                  }}>
+                  <CiCirclePlus className='w-6 h-6' />
+                  <span>Добавить</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className='sm:max-w-[425px]'>
+                <DialogHeader>
+                  <DialogTitle>🖼️ Добавить изображение</DialogTitle>
+                  <DialogDescription>
+                    Дайте название и выберите файл (или перетащите его в
+                    выделенную область):
+                  </DialogDescription>
+                </DialogHeader>
+                <div className='grid gap-4 py-4'>
+                  <FormField
+                    control={addImageForm.control}
+                    name='title'
+                    render={({ field }) => (
+                      <FormItem className='items-center gap-4'>
+                        <Label htmlFor='title' className='text-right'>
+                          Название
+                        </Label>
+                        <FormControl>
+                          <Input
+                            id='title'
+                            placeholder='Название изображения...'
+                            className='col-span-3'
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}></FormField>
+                  <div
+                    className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
+                    {...getRootProps()}>
+                    <FormField
+                      control={addImageForm.control}
+                      name='image'
+                      render={({ field }) => {
+                        <FormItem>
+                          <FormControl>
+                            <input
+                              type='file'
+                              id='files'
+                              {...getInputProps()}
+                            />
+                            ;
+                          </FormControl>
+                        </FormItem>;
+                      }}></FormField>
+                    <div
+                      className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
+                      <BiLandscape className='w-12 h-12' />
+                      Выберите или перетащите изображение
+                    </div>
+                    <img
+                      src={selectedFileURL}
+                      className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type='submit' className='flex gap-2 items-center'>
+                    <BiSolidSave />
+                    Сохранить
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </Form>
         </TabsContent>
         <TabsContent value='albums'></TabsContent>
       </Tabs>
-      <Dialog>
-        <DialogTrigger>
-          <Button
-            className='absolute top-5 right-5 flex gap-2'
-            onClick={() => {}}>
-            <CiCirclePlus className='w-6 h-6' />
-            <span>Добавить</span>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className='sm:max-w-[425px]'>
-          <DialogHeader>
-            <DialogTitle>🖼️ Добавить изображение</DialogTitle>
-            <DialogDescription>
-              Дайте название и выберите файл (или перетащите его в выделенную
-              область):
-            </DialogDescription>
-          </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='items-center gap-4'>
-              <Label htmlFor='title' className='text-right'>
-                Название
-              </Label>
-              <Input
-                id='title'
-                placeholder='Название изображения...'
-                className='col-span-3'
-              />
-            </div>
-            <div
-              className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
-              {...getRootProps()}>
-              <input type='file' id='files' {...getInputProps()} />
-
-              <div
-                className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
-                <BiLandscape className='w-12 h-12' />
-                Выберите или перетащите изображение
-              </div>
-              <img
-                src={selectedFile}
-                className={`${isFileSelected ? 'block' : 'hidden'} h-64 w-64`}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type='submit' className='flex gap-2 items-center'>
-              <BiSolidSave />
-              Сохранить
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
