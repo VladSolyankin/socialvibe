@@ -28,21 +28,18 @@ import { z } from 'zod';
 import { Form, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormControl, FormField, FormItem } from '@/components/ui/form';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { FcGenericSortingAsc } from 'react-icons/fc';
 
 const addImageFormSchema = z.object({
   title: z.string().min(1, { message: 'Название не должно быть пустым' }),
-  image: z
-    .instanceof(File)
-    .refine(file => file.size < 1024 * 1024 * 8, {
-      message: 'Размер файла не должен превышать 5Мб',
-    })
-    .refine(
-      file =>
-        ['image/png', 'image/jpg', 'image/jpeg', 'image/svg'].includes(
-          file.type
-        ),
-      { message: 'Файл должен быть с расширением .png/jpg/jpeg/svg' }
-    ),
 });
 
 export const Photos = () => {
@@ -65,7 +62,6 @@ export const Photos = () => {
     resolver: zodResolver(addImageFormSchema),
     defaultValues: {
       title: '',
-      image: new File([], ''),
     },
   });
 
@@ -93,12 +89,97 @@ export const Photos = () => {
   };
 
   return (
-    <div className='relative'>
+    <div>
       <Tabs defaultValue='photos' className='p-5'>
-        <TabsList>
-          <TabsTrigger value='photos'>Изображения</TabsTrigger>
-          <TabsTrigger value='albums'>Альбомы</TabsTrigger>
-        </TabsList>
+        <div className='w-full flex justify-between'>
+          <TabsList>
+            <TabsTrigger value='photos'>🖼️ Изображения </TabsTrigger>
+            <TabsTrigger value='albums'>Альбомы</TabsTrigger>
+          </TabsList>
+          <div className='flex gap-3'>
+            <Form {...addImageForm}>
+              <Dialog onOpenChange={() => onAddDialogClose()}>
+                <DialogTrigger>
+                  <Button
+                    type='submit'
+                    className='flex gap-2'
+                    onClick={() => {
+                      onAddDialogOpen;
+                    }}>
+                    <CiCirclePlus className='w-6 h-6' />
+                    <span>Добавить</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className='sm:max-w-[425px]'>
+                  <DialogHeader>
+                    <DialogTitle>🖼️ Добавить изображение</DialogTitle>
+                    <DialogDescription>
+                      Дайте название и выберите файл (или перетащите его в
+                      выделенную область):
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className='flex flex-col gap-4 py-4'>
+                    <Input
+                      id='title'
+                      placeholder='Название изображения...'
+                      className='col-span-3'
+                    />
+                    <div
+                      className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
+                      {...getRootProps()}>
+                      <input type='file' id='files' {...getInputProps()} />
+                      <div
+                        className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
+                        <BiLandscape className='w-12 h-12' />
+                        Выберите или перетащите изображение
+                      </div>
+                      <img
+                        src={selectedFileURL}
+                        className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type='submit' className='flex gap-2 items-center'>
+                      <BiSolidSave />
+                      Сохранить
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </Form>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button
+                  type='submit'
+                  variant='secondary'
+                  className='flex gap-2'
+                  onClick={() => {}}>
+                  <FcGenericSortingAsc className='w-6 h-6' />
+                  <span>Сортировать</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>По дате создания</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className='hover:bg-gray-300'>
+                  Раньше
+                </DropdownMenuItem>
+                <DropdownMenuItem className='hover:bg-gray-300'>
+                  Позже
+                </DropdownMenuItem>
+                <DropdownMenuLabel>По названию</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className='hover:bg-gray-300'>
+                  С начала алфавита
+                </DropdownMenuItem>
+                <DropdownMenuItem className='hover:bg-gray-300'>
+                  С конца алфавита
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
         <TabsContent value='photos'>
           <Card>
             <CardHeader>
@@ -120,86 +201,34 @@ export const Photos = () => {
               ))}
             </CardContent>
           </Card>
-          <Form {...addImageForm}>
-            <Dialog onOpenChange={() => onAddDialogClose()}>
-              <DialogTrigger>
-                <Button
-                  type='submit'
-                  className='absolute top-5 right-5 flex gap-2'
-                  onClick={() => {
-                    onAddDialogOpen;
-                  }}>
-                  <CiCirclePlus className='w-6 h-6' />
-                  <span>Добавить</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className='sm:max-w-[425px]'>
-                <DialogHeader>
-                  <DialogTitle>🖼️ Добавить изображение</DialogTitle>
-                  <DialogDescription>
-                    Дайте название и выберите файл (или перетащите его в
-                    выделенную область):
-                  </DialogDescription>
-                </DialogHeader>
-                <div className='grid gap-4 py-4'>
-                  <FormField
-                    control={addImageForm.control}
-                    name='title'
-                    render={({ field }) => (
-                      <FormItem className='items-center gap-4'>
-                        <Label htmlFor='title' className='text-right'>
-                          Название
-                        </Label>
-                        <FormControl>
-                          <Input
-                            id='title'
-                            placeholder='Название изображения...'
-                            className='col-span-3'
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}></FormField>
-                  <div
-                    className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
-                    {...getRootProps()}>
-                    <FormField
-                      control={addImageForm.control}
-                      name='image'
-                      render={({ field }) => {
-                        <FormItem>
-                          <FormControl>
-                            <input
-                              type='file'
-                              id='files'
-                              {...getInputProps()}
-                            />
-                            ;
-                          </FormControl>
-                        </FormItem>;
-                      }}></FormField>
-                    <div
-                      className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
-                      <BiLandscape className='w-12 h-12' />
-                      Выберите или перетащите изображение
-                    </div>
-                    <img
-                      src={selectedFileURL}
-                      className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type='submit' className='flex gap-2 items-center'>
-                    <BiSolidSave />
-                    Сохранить
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </Form>
         </TabsContent>
-        <TabsContent value='albums'></TabsContent>
+        <TabsContent value='albums'>
+          <Card>
+            <CardHeader className='mb-5'>
+              <CardTitle>Ваши альбомы</CardTitle>
+              <CardDescription>
+                Создавайте уникальные коллекции изображений и просматривайте их
+                разом
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16'>
+              {userImages.map(photo => (
+                <div
+                  key={nanoid()}
+                  className='relative flex flex-col items-center'>
+                  <img
+                    className='w-52 h-52 rounded-xl z-30'
+                    src={photo.url}
+                    alt='User photo'
+                  />
+                  <span className='z-10'>{photo.title}</span>
+                  <div className='absolute z-20 -translate-x-[-35px] -translate-y-[10px] bg-blue-400 top-0 left-0 w-52 h-52 rounded-xl'></div>
+                  <div className='absolute z-10 -translate-x-[-45px] -translate-y-[20px] bg-blue-500 top-0 left-0 w-52 h-52 rounded-xl'></div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
