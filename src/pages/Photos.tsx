@@ -6,11 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getUserImages } from '@/lib/firebase';
-import { nanoid } from 'nanoid';
-import { useCallback, useEffect, useState } from 'react';
-import { CiCirclePlus } from 'react-icons/ci';
 import {
   Dialog,
   DialogContent,
@@ -20,14 +15,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@radix-ui/react-label';
-import { FileWithPath, useDropzone } from 'react-dropzone';
-import { BiLandscape, BiSolidSave } from 'react-icons/bi';
-import { z } from 'zod';
-import { Form, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { FormControl, FormField, FormItem } from '@/components/ui/form';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +23,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getUserImages } from '@/lib/firebase';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { nanoid } from 'nanoid';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FileWithPath, useDropzone } from 'react-dropzone';
+import { Form, useForm } from 'react-hook-form';
+import { BiLandscape, BiSolidSave } from 'react-icons/bi';
+import { CiCirclePlus } from 'react-icons/ci';
 import { FcGenericSortingAsc } from 'react-icons/fc';
+import { z } from 'zod';
 
 const addImageFormSchema = z.object({
   title: z.string().min(1, { message: 'Название не должно быть пустым' }),
@@ -211,7 +209,7 @@ export const Photos = () => {
                 разом
               </CardDescription>
             </CardHeader>
-            <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16'>
+            <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16 grid-flow-row'>
               {userImages.map(photo => (
                 <div
                   key={nanoid()}
@@ -222,8 +220,8 @@ export const Photos = () => {
                     alt='User photo'
                   />
                   <span className='z-10'>{photo.title}</span>
-                  <div className='absolute z-20 -translate-x-[-35px] -translate-y-[10px] bg-blue-400 top-0 left-0 w-52 h-52 rounded-xl'></div>
-                  <div className='absolute z-10 -translate-x-[-45px] -translate-y-[20px] bg-blue-500 top-0 left-0 w-52 h-52 rounded-xl'></div>
+                  {/* <div className='absolute z-20 -translate-x-[-55px] -translate-y-[10px] bg-blue-400 top-0 left-0 w-52 h-52 rounded-xl'></div>
+                  <div className='absolute z-10 -translate-x-[-65px] -translate-y-[20px] bg-blue-500 top-0 left-0 w-52 h-52 rounded-xl'></div> */}
                 </div>
               ))}
             </CardContent>

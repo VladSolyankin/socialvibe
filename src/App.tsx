@@ -33,11 +33,12 @@ function App() {
       <Route element={window.innerWidth ? <DesktopLayout /> : <MobileLayout />}>
         <Route index element={<News />} />
         <Route path='/photos' element={<Photos />} />
+        <Route path='/news' element={<News />} />
         <Route path='/music' element={<Music />} />
         <Route path='/chats' element={<Chats />} />
+        <Route path='/ai' element={<AIBot />} />
+        <Route path='/profile' element={<Profile />} />
       </Route>
-
-      <Route path='/profile' element={<Profile />} />
     </Routes>
   );
 }
