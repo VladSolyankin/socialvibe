@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   setDoc,
 } from 'firebase/firestore';
 import { db, storage, auth } from './config';
@@ -51,7 +52,11 @@ export const getCurrentUser = async (userId: string) => {
   return currentUser.data();
 };
 
-export const getUserProfileInfo = () => {};
+export const getUserProfileInfo = async (uid: 'string') => {
+  const userInfo = await getDoc(doc(db, `users/${uid}`));
+
+  return userInfo.data();
+};
 
 export const getUserFriends = () => {};
 
@@ -68,7 +73,13 @@ export const editProfileInfo = () => {};
 // Новости
 export const getAllPosts = () => {};
 
-export const getUserPosts = () => {};
+export const getUserPosts = async () => {
+  const q = query(collection(db, `users/${storageUserId}/posts`));
+
+  const userPosts = await getDocs(q);
+
+  return userPosts;
+};
 
 export const getLikedPosts = () => {};
 

@@ -5,28 +5,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { KeyboardEvent, useState, useRef, useEffect } from 'react';
+import { ChangeEvent, KeyboardEvent, useState } from 'react';
 import { IoMdInformationCircleOutline } from 'react-icons/io';
 
 export const AIBot = () => {
   const [userMessages, setUserMessages] = useState([]);
-  const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [userMessages]);
+  const [currentMessage, setCurrentMessage] = useState('');
 
   const onEnterPressed = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      setUserMessages(prevMessages => [...prevMessages, e.target.value]);
-      e.target.value = '';
+    if (e.key === 'Enter' && currentMessage) {
+      setUserMessages(prevMessages => [...prevMessages, currentMessage]);
+      setCurrentMessage('');
     }
   };
 
+  const onCurrentMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setCurrentMessage(e.target.value);
+  };
+
   return (
-    <div className='h-screen flex flex-col items-center p-3 gap-3'>
+    <div className='h-screen flex flex-col items-center p-3 w-[50vw] gap-10 border-2 rounded-xl'>
       <Card className='sticky top-0 w-[80%] h-12 border-2 z-10'>
         <CardContent>
           <div className='h-12 flex items-center justify-between text-lg'>
@@ -43,7 +41,7 @@ export const AIBot = () => {
           </div>
         </CardContent>
       </Card>
-      <Card className='relative h-full w-[80%] z-0 overflow-y-auto'>
+      <Card className='relative h-full w-[80%] z-0 overflow-auto'>
         <div className='absolute h-[calc(100% + 160px)] w-[80%] right-5 bottom-0'>
           {userMessages.map((message, index) => (
             <div key={index} className='flex justify-end mb-2'>
@@ -55,8 +53,10 @@ export const AIBot = () => {
         </div>
       </Card>
       <Input
+        value={currentMessage}
         className='w-[80%] h-12'
         placeholder='Введите запрос...'
+        onChange={e => onCurrentMessageChange(e)}
         onKeyDown={e => onEnterPressed(e)}
       />
     </div>

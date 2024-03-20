@@ -24,16 +24,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getUserImages } from '@/lib/firebase';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { nanoid } from 'nanoid';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FileWithPath, useDropzone } from 'react-dropzone';
 import { Form, useForm } from 'react-hook-form';
 import { BiLandscape, BiSolidSave } from 'react-icons/bi';
 import { CiCirclePlus } from 'react-icons/ci';
-import { FcGenericSortingAsc } from 'react-icons/fc';
+import { FcGenericSortingAsc, FcLike } from 'react-icons/fc';
+import { FaRegHeart } from 'react-icons/fa6';
 import { z } from 'zod';
 
 const addImageFormSchema = z.object({
@@ -46,6 +48,8 @@ export const Photos = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFileSelected, setIsFileSelected] = useState(false);
   const [selectedFileURL, setSelectedFileURL] = useState('');
+  const [isImageDialogOpen, setImageDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
 
   useEffect(() => {
     const fetchUserImages = async () => {
@@ -84,6 +88,15 @@ export const Photos = () => {
       setIsFileSelected(false);
       setSelectedFileURL('');
     }
+  };
+
+  const onShowImageDialog = (image: string) => {
+    setSelectedImage(image);
+    setImageDialogOpen(true);
+  };
+
+  const onImageDialogClose = () => {
+    setImageDialogOpen(false);
   };
 
   return (
@@ -176,6 +189,25 @@ export const Photos = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Dialog open={isImageDialogOpen} onOpenChange={onImageDialogClose}>
+              <DialogContent>
+                <Card className='flex h-[500px] w-[800px]'>
+                  <div className='basis-3/4'>
+                    <img
+                      className='h-full rounded-l-xl object-fill '
+                      src={selectedImage}
+                      alt=''
+                    />
+                  </div>
+                  <Separator orientation='vertical' />
+                  <div className='basis-1/4'>
+                    <FaRegHeart />
+                    <FcLike />
+                    <div className='flex flex-col'></div>
+                  </div>
+                </Card>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         <TabsContent value='photos'>
@@ -186,13 +218,14 @@ export const Photos = () => {
                 Здесь можно просматривать и делиться фотографиями
               </CardDescription>
             </CardHeader>
-            <CardContent className='grid grid-cols-3 place-content-center gap-6'>
+            <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16'>
               {userImages.map(photo => (
                 <div key={nanoid()} className='flex flex-col items-center'>
                   <img
                     className='w-52 h-52 rounded-xl'
                     src={photo.url}
                     alt='User photo'
+                    onClick={() => onShowImageDialog(photo.url)}
                   />
                   <span>{photo.title}</span>
                 </div>
@@ -202,7 +235,7 @@ export const Photos = () => {
         </TabsContent>
         <TabsContent value='albums'>
           <Card>
-            <CardHeader className='mb-5'>
+            <CardHeader>
               <CardTitle>Ваши альбомы</CardTitle>
               <CardDescription>
                 Создавайте уникальные коллекции изображений и просматривайте их
