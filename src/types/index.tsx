@@ -14,7 +14,7 @@ type IUser = {
 
 type IUserChats = {};
 
-type IUserPhotos = {
+export type IUserPhotos = {
   title: string;
   url: string;
 };
@@ -48,4 +48,11 @@ type IUserInfo = {
   city: string;
   phone: string;
   status: string;
+};
+
+export type IUserPost = {
+  comments: Array<{ content: string; user_id: string }>;
+  images: Array<string>;
+  title: string;
+  user_id: string;
 };

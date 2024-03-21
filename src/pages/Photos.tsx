@@ -26,7 +26,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getUserImages } from '@/lib/firebase';
+import { addUserStorageImage, getUserImages } from '@/lib/firebase';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { nanoid } from 'nanoid';
 import { useCallback, useEffect, useState } from 'react';
@@ -50,6 +50,8 @@ export const Photos = () => {
   const [selectedFileURL, setSelectedFileURL] = useState('');
   const [isImageDialogOpen, setImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [selectedFile, setSelectedFile] = useState();
+  const [addImageTitle, setAddImageTitle] = useState('');
 
   useEffect(() => {
     const fetchUserImages = async () => {
@@ -99,6 +101,11 @@ export const Photos = () => {
     setImageDialogOpen(false);
   };
 
+  const onAddFormSubmit = () => {
+    addUserStorageImage(addImageTitle, selectedFile);
+  };
+
+  const onSortChange = () => {};
   return (
     <div>
       <Tabs defaultValue='photos' className='p-5'>
@@ -108,7 +115,7 @@ export const Photos = () => {
             <TabsTrigger value='albums'>Альбомы</TabsTrigger>
           </TabsList>
           <div className='flex gap-3'>
-            <Form {...addImageForm}>
+            <Form {...addImageForm} onSubmit={onAddFormSubmit}>
               <Dialog onOpenChange={() => onAddDialogClose()}>
                 <DialogTrigger>
                   <Button
@@ -134,11 +141,17 @@ export const Photos = () => {
                       id='title'
                       placeholder='Название изображения...'
                       className='col-span-3'
+                      onChange={e => setAddImageTitle(e.target.value)}
                     />
                     <div
                       className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
                       {...getRootProps()}>
-                      <input type='file' id='files' {...getInputProps()} />
+                      <input
+                        type='file'
+                        id='files'
+                        {...getInputProps()}
+                        onChange={e => setSelectedFile(e.target.files[0])}
+                      />
                       <div
                         className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
                         <BiLandscape className='w-12 h-12' />
@@ -151,7 +164,10 @@ export const Photos = () => {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button type='submit' className='flex gap-2 items-center'>
+                    <Button
+                      type='submit'
+                      className='flex gap-2 items-center'
+                      onClick={() => onAddFormSubmit()}>
                       <BiSolidSave />
                       Сохранить
                     </Button>
@@ -210,7 +226,7 @@ export const Photos = () => {
             </Dialog>
           </div>
         </div>
-        <TabsContent value='photos'>
+        <TabsContent value='photos' className='slide-in-left'>
           <Card>
             <CardHeader>
               <CardTitle>Ваши изображения</CardTitle>
@@ -233,7 +249,7 @@ export const Photos = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value='albums'>
+        <TabsContent value='albums' className='slide-in-right'>
           <Card>
             <CardHeader>
               <CardTitle>Ваши альбомы</CardTitle>

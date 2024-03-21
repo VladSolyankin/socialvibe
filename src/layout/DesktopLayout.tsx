@@ -1,3 +1,4 @@
+import { ModeToggle } from '@/components/shared/ModeToggle';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -117,6 +118,8 @@ export const DesktopLayout = () => {
           </Button>
         </SheetContent>
       </Sheet>
+
+      <ModeToggle />
     </div>
   );
 };

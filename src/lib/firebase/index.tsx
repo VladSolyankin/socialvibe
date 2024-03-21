@@ -8,6 +8,8 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import { db, storage, auth } from './config';
+import { IUserPhotos } from '@/types';
+import { ref, uploadBytes } from 'firebase/storage';
 
 const storageUserId = localStorage.getItem('userAuth');
 
@@ -129,6 +131,12 @@ export const getUserImages = async () => {
   const data = (await userImages.data()?.photos.user_images) as IUserPhotos[];
 
   return data;
+};
+
+export const addUserStorageImage = async (title: string, file: File) => {
+  const userStorageRef = ref(storage, `users/${storageUserId}/images/${title}`);
+
+  await uploadBytes(userStorageRef, file).then(() => console.log('file added'));
 };
 
 export const getUserAlbumImages = () => {};
