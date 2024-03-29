@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -24,23 +25,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { addUserStorageImage, getUserImages } from '@/lib/firebase';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  addUserImage,
+  deleteUserImage,
+  getUserAlbums,
+  getUserImages,
+} from '@/lib/firebase';
 import { nanoid } from 'nanoid';
 import { useCallback, useEffect, useState } from 'react';
 import { FileWithPath, useDropzone } from 'react-dropzone';
-import { Form, useForm } from 'react-hook-form';
 import { BiLandscape, BiSolidSave } from 'react-icons/bi';
 import { CiCirclePlus } from 'react-icons/ci';
-import { FcGenericSortingAsc, FcLike } from 'react-icons/fc';
-import { FaRegHeart } from 'react-icons/fa6';
-import { z } from 'zod';
-
-const addImageFormSchema = z.object({
-  title: z.string().min(1, { message: 'Название не должно быть пустым' }),
-});
+import { FcGenericSortingAsc } from 'react-icons/fc';
 
 export const Photos = () => {
   const [userImages, setUserImages] = useState<Array<IUserPhotos>>([]);
@@ -52,26 +50,42 @@ export const Photos = () => {
   const [selectedImage, setSelectedImage] = useState('');
   const [selectedFile, setSelectedFile] = useState();
   const [addImageTitle, setAddImageTitle] = useState('');
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [deleteImageIndex, setDeleteImageIndex] = useState(NaN);
+  const [isAlbumOpen, setIsAlbumOpen] = useState(false);
+  const [selectedAlbum, setSelectedAlbum] = useState({});
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchUserImages = async () => {
-      const userImages = await getUserImages();
-      setUserImages(() => userImages);
-    };
-
     fetchUserImages();
   }, []);
 
-  const addImageForm = useForm<z.infer<typeof addImageFormSchema>>({
-    resolver: zodResolver(addImageFormSchema),
-    defaultValues: {
-      title: '',
-    },
-  });
+  useEffect(() => {
+    fetchUserAlbums();
+    console.log(userAlbums);
+  }, []);
+
+  const fetchUserImages = async () => {
+    const userImages = await getUserImages();
+    setUserImages(() => userImages);
+  };
+
+  const fetchUserAlbums = async () => {
+    const userAlbums = await getUserAlbums();
+    setUserAlbums(() => userAlbums);
+  };
 
   const onDrop = useCallback((files: FileWithPath[]) => {
     setIsFileSelected(true);
-    setSelectedFileURL(URL.createObjectURL(files[0]));
+    //setSelectedFileURL(URL.createObjectURL(files[0]));
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedFile(file);
+        setSelectedFileURL(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    });
   }, []);
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -86,24 +100,68 @@ export const Photos = () => {
   };
 
   const onAddDialogClose = () => {
-    if (!isDialogOpen) {
-      setIsFileSelected(false);
-      setSelectedFileURL('');
-    }
+    setIsFileSelected(false);
+    setSelectedFileURL('');
+    setIsDialogOpen(false);
   };
 
-  const onShowImageDialog = (image: string) => {
+  const onShowImageDialog = (image: string, index: number) => {
     setSelectedImage(image);
     setImageDialogOpen(true);
+    setDeleteImageIndex(index);
   };
 
   const onImageDialogClose = () => {
     setImageDialogOpen(false);
   };
 
-  const onAddFormSubmit = () => {
-    addUserStorageImage(addImageTitle, selectedFile);
+  const onAddFormSubmit = async () => {
+    //addUserStorageImage(addImageTitle, selectedFile);
+
+    if (addImageTitle.length === 0) {
+      toast({
+        title: '❌ Название не может быть пустым!',
+        description: 'Заполните поле с названием',
+      });
+      return;
+    }
+
+    if (addImageTitle.length > 20) {
+      toast({
+        title: '❌ Название не может быть больше 20 символов!',
+        description: 'Сделайте название короче',
+      });
+      return;
+    }
+
+    if (!selectedFileURL) {
+      toast({
+        title: '❌ Вы не выбрали файл!',
+        description: 'Выберите файл для добавления',
+      });
+    }
+
+    await addUserImage(addImageTitle, selectedFileURL);
+    await fetchUserImages();
   };
+
+  const onDeleteUserImage = async () => {
+    await deleteUserImage(deleteImageIndex);
+    await fetchUserImages();
+    setImageDialogOpen(false);
+    setDeleteImageIndex(NaN);
+  };
+
+  const onSelectUserAlbum = (album: object) => {
+    setIsAlbumOpen(true);
+    setSelectedAlbum(album);
+  };
+
+  const onDeleteAlbum = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const onAlbumDeleteConfirmed = () => {};
 
   const onSortChange = () => {};
   return (
@@ -115,55 +173,50 @@ export const Photos = () => {
             <TabsTrigger value='albums'>Альбомы</TabsTrigger>
           </TabsList>
           <div className='flex gap-3'>
-            <Form {...addImageForm} onSubmit={onAddFormSubmit}>
-              <Dialog onOpenChange={() => onAddDialogClose()}>
-                <DialogTrigger>
-                  <Button
-                    type='submit'
-                    className='flex gap-2'
-                    onClick={() => {
-                      onAddDialogOpen;
-                    }}>
-                    <CiCirclePlus className='w-6 h-6' />
-                    <span>Добавить</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className='sm:max-w-[425px]'>
-                  <DialogHeader>
-                    <DialogTitle>🖼️ Добавить изображение</DialogTitle>
-                    <DialogDescription>
-                      Дайте название и выберите файл (или перетащите его в
-                      выделенную область):
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className='flex flex-col gap-4 py-4'>
-                    <Input
-                      id='title'
-                      placeholder='Название изображения...'
-                      className='col-span-3'
-                      onChange={e => setAddImageTitle(e.target.value)}
-                    />
+            <Dialog onOpenChange={() => onAddDialogClose()}>
+              <DialogTrigger>
+                <Button
+                  type='submit'
+                  className='flex gap-2'
+                  onClick={() => {
+                    onAddDialogOpen;
+                  }}>
+                  <CiCirclePlus className='w-6 h-6' />
+                  <span>Добавить</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className='sm:max-w-[425px]'>
+                <DialogHeader>
+                  <DialogTitle>🖼️ Добавить изображение</DialogTitle>
+                  <DialogDescription>
+                    Дайте название и выберите файл (или перетащите его в
+                    выделенную область):
+                  </DialogDescription>
+                </DialogHeader>
+                <div className='flex flex-col gap-4 py-4'>
+                  <Input
+                    id='title'
+                    placeholder='Название изображения...'
+                    className='col-span-3'
+                    onChange={e => setAddImageTitle(e.target.value)}
+                  />
+                  <div
+                    className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
+                    {...getRootProps()}>
+                    <input type='file' id='files' {...getInputProps()} />
                     <div
-                      className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
-                      {...getRootProps()}>
-                      <input
-                        type='file'
-                        id='files'
-                        {...getInputProps()}
-                        onChange={e => setSelectedFile(e.target.files[0])}
-                      />
-                      <div
-                        className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
-                        <BiLandscape className='w-12 h-12' />
-                        Выберите или перетащите изображение
-                      </div>
-                      <img
-                        src={selectedFileURL}
-                        className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
-                      />
+                      className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
+                      <BiLandscape className='w-12 h-12' />
+                      Выберите или перетащите изображение
                     </div>
+                    <img
+                      src={selectedFileURL}
+                      className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
+                    />
                   </div>
-                  <DialogFooter>
+                </div>
+                <DialogFooter>
+                  <DialogClose>
                     <Button
                       type='submit'
                       className='flex gap-2 items-center'
@@ -171,10 +224,10 @@ export const Photos = () => {
                       <BiSolidSave />
                       Сохранить
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </Form>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <Button
@@ -207,19 +260,44 @@ export const Photos = () => {
             </DropdownMenu>
             <Dialog open={isImageDialogOpen} onOpenChange={onImageDialogClose}>
               <DialogContent>
-                <Card className='flex h-[500px] w-[800px]'>
-                  <div className='basis-3/4'>
-                    <img
-                      className='h-full rounded-l-xl object-fill '
-                      src={selectedImage}
-                      alt=''
-                    />
-                  </div>
-                  <Separator orientation='vertical' />
-                  <div className='basis-1/4'>
-                    <FaRegHeart />
-                    <FcLike />
+                <Card className='flex flex-col min-w-[500px] gap-3'>
+                  <img
+                    className='h-full rounded-t-xl object-contain'
+                    src={selectedImage}
+                    alt=''
+                  />
+                  <div className='flex p-3 gap-3 flex-row-reverse'>
                     <div className='flex flex-col'></div>
+                    <Button variant='ghost' className='text-sm'>
+                      ↗ Поделиться
+                    </Button>
+                    <Button
+                      variant='destructive'
+                      className='text-sm'
+                      onClick={() => setIsConfirmOpen(true)}>
+                      Удалить
+                    </Button>
+                    <Dialog
+                      open={isConfirmOpen}
+                      onOpenChange={setIsConfirmOpen}>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            Вы уверены что хотите удалить эту фотографию?
+                          </DialogTitle>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose className='flex gap-5'>
+                            <Button>Нет</Button>
+                            <Button
+                              variant='destructive'
+                              onClick={() => onDeleteUserImage()}>
+                              Да
+                            </Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </Card>
               </DialogContent>
@@ -235,17 +313,18 @@ export const Photos = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16'>
-              {userImages.map(photo => (
-                <div key={nanoid()} className='flex flex-col items-center'>
-                  <img
-                    className='w-52 h-52 rounded-xl'
-                    src={photo.url}
-                    alt='User photo'
-                    onClick={() => onShowImageDialog(photo.url)}
-                  />
-                  <span>{photo.title}</span>
-                </div>
-              ))}
+              {userImages &&
+                userImages.map((photo, index) => (
+                  <div key={nanoid()} className='flex flex-col items-center'>
+                    <img
+                      className='w-52 h-52 rounded-xl'
+                      src={photo.url}
+                      alt='User photo'
+                      onClick={() => onShowImageDialog(photo.url, index)}
+                    />
+                    <span>{photo.title}</span>
+                  </div>
+                ))}
             </CardContent>
           </Card>
         </TabsContent>
@@ -259,22 +338,66 @@ export const Photos = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16 grid-flow-row'>
-              {userImages.map(photo => (
-                <div
-                  key={nanoid()}
-                  className='relative flex flex-col items-center'>
-                  <img
-                    className='w-52 h-52 rounded-xl z-30'
-                    src={photo.url}
-                    alt='User photo'
-                  />
-                  <span className='z-10'>{photo.title}</span>
-                  {/* <div className='absolute z-20 -translate-x-[-55px] -translate-y-[10px] bg-blue-400 top-0 left-0 w-52 h-52 rounded-xl'></div>
-                  <div className='absolute z-10 -translate-x-[-65px] -translate-y-[20px] bg-blue-500 top-0 left-0 w-52 h-52 rounded-xl'></div> */}
-                </div>
-              ))}
+              {userAlbums &&
+                userAlbums.map(album => (
+                  <div
+                    key={nanoid()}
+                    className='relative flex flex-col items-center'>
+                    <img
+                      className='w-52 h-52 rounded-xl z-30'
+                      src={album.preview}
+                      alt='User photo'
+                      onClick={() => onSelectUserAlbum(album)}
+                    />
+                    <span className='z-10'>{album.title}</span>
+                  </div>
+                ))}
             </CardContent>
           </Card>
+          <Dialog open={isAlbumOpen} onOpenChange={setIsAlbumOpen}>
+            <DialogContent>
+              <DialogHeader>{selectedAlbum.title}</DialogHeader>
+              <div className='grid grid-cols-4 w-[50vw]'>
+                {selectedAlbum.images &&
+                  selectedAlbum.images.map(image => {
+                    return (
+                      <div className='flex flex-col items-center'>
+                        <img
+                          className='w-40 h-40 rounded-xl'
+                          src={image.url}
+                          alt='User photo'
+                        />
+                        <span>{image.title}</span>
+                      </div>
+                    );
+                  })}
+              </div>
+              <DialogFooter>
+                <Button variant='destructive' onClick={onDeleteAlbum}>
+                  Удалить
+                </Button>
+                <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        Вы уверены что хотите удалить этот альбом?
+                      </DialogTitle>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose className='flex gap-5'>
+                        <Button>Нет</Button>
+                        <Button
+                          variant='destructive'
+                          onClick={() => onAlbumDeleteConfirmed()}>
+                          Да
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
     </div>

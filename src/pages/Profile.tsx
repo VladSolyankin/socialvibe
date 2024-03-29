@@ -1,16 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import { HfInference } from '@huggingface/inference'
-import {Input} from "@/components/ui/input.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import React, { useEffect, useState } from 'react';
+import { HfInference } from '@huggingface/inference';
+import { Input } from '@/components/ui/input.tsx';
+import { Button } from '@/components/ui/button.tsx';
 export const Profile = () => {
-
-  const hf = new HfInference('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')
-  const [image, setImage] = useState('')
-  const [prompt, setPrompt] = useState('')
+  const hf = new HfInference('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');
+  const [image, setImage] = useState('');
+  const [prompt, setPrompt] = useState('');
 
   const onPromptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPrompt(e.target.value as string)
-  }
+    setPrompt(e.target.value as string);
+  };
 
   const onGenerateImage = async () => {
     const res = await hf.textToImage({
@@ -19,14 +18,16 @@ export const Profile = () => {
       parameters: {
         height: 640,
         width: 960,
-      }
-    })
-    setImage(URL.createObjectURL(res))
-  }
+      },
+    });
+    setImage(URL.createObjectURL(res));
+  };
 
-  return <div className="flex flex-col items-center gap-10 w-[50vw]">
-    <img src={image} alt=""/>
-    <Input type="text" onChange={(e) => onPromptChange(e)}/>
-    <Button onClick={() => onGenerateImage()}>Сгенерировать</Button>
-  </div>;
+  return (
+    <div className='flex flex-col items-center gap-10 w-[50vw]'>
+      <img src={image} alt='' />
+      <Input type='text' onChange={e => onPromptChange(e)} />
+      <Button onClick={() => onGenerateImage()}>Сгенерировать</Button>
+    </div>
+  );
 };

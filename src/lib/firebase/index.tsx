@@ -1,11 +1,14 @@
 import {
+  DocumentData,
   addDoc,
+  arrayUnion,
   collection,
   doc,
   getDoc,
   getDocs,
   query,
   setDoc,
+  updateDoc,
 } from 'firebase/firestore';
 import { db, storage, auth } from './config';
 import { IUserPhotos } from '@/types';
@@ -20,6 +23,7 @@ export const createUserDocument = async (
   birthDate: string
 ) => {
   try {
+    console.log('creating user');
     await setDoc(doc(db, `users/${userId}`), {
       avatar_url: '',
       email: userEmail,
@@ -54,10 +58,18 @@ export const getCurrentUser = async (userId: string) => {
   return currentUser.data();
 };
 
-export const getUserProfileInfo = async (uid: 'string') => {
-  const userInfo = await getDoc(doc(db, `users/${uid}`));
+export const getUsersProfileInfo = async () => {
+  const usersData: DocumentData[] = [];
 
-  return userInfo.data();
+  const q = query(collection(db, 'users'));
+
+  const userDocs = await getDocs(q);
+
+  userDocs.forEach(user => {
+    usersData.push({ id: user.id, ...user.data() });
+  });
+
+  return usersData;
 };
 
 export const getUserFriends = () => {};
@@ -123,7 +135,13 @@ export const editUserMessage = () => {};
 
 // Фотографии
 
-export const getUserAlbums = () => {};
+export const getUserAlbums = async () => {
+  const userImages = await getDoc(doc(db, `users/${storageUserId}`));
+
+  const data = await userImages.data()?.photos.albums;
+
+  return data;
+};
 
 export const getUserImages = async () => {
   const userImages = await getDoc(doc(db, `users/${storageUserId}`));
@@ -133,6 +151,23 @@ export const getUserImages = async () => {
   return data;
 };
 
+export const addUserImage = async (imageTitle: string, imageUrl: string) => {
+  const userRef = doc(db, `users/${storageUserId}`);
+  const userImages = await getDoc(userRef);
+
+  const newImage = {
+    url: imageUrl,
+    date: new Date().toLocaleDateString('ru-RU'),
+    title: imageTitle,
+  };
+
+  const photos = userImages.data().photos;
+
+  photos.user_images.push(newImage);
+
+  await updateDoc(userRef, { photos });
+};
+
 export const addUserStorageImage = async (title: string, file: File) => {
   const userStorageRef = ref(storage, `users/${storageUserId}/images/${title}`);
 
@@ -140,6 +175,17 @@ export const addUserStorageImage = async (title: string, file: File) => {
 };
 
 export const getUserAlbumImages = () => {};
+
+export const deleteUserImage = async (index: number) => {
+  const userRef = doc(db, `users/${storageUserId}`);
+  const userImages = await getDoc(userRef);
+
+  const photos = userImages.data().photos;
+
+  photos.user_images.splice(index, 1);
+
+  await updateDoc(userRef, { photos });
+};
 
 // Нейро-чат
 
