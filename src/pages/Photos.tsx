@@ -34,11 +34,12 @@ import {
   getUserImages,
 } from '@/lib/firebase';
 import { nanoid } from 'nanoid';
-import { useCallback, useEffect, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import { FileWithPath, useDropzone } from 'react-dropzone';
 import { BiLandscape, BiSolidSave } from 'react-icons/bi';
 import { CiCirclePlus } from 'react-icons/ci';
 import { FcGenericSortingAsc } from 'react-icons/fc';
+import Emoji from 'react-emoji-render';
 
 export const Photos = () => {
   const [userImages, setUserImages] = useState<Array<IUserPhotos>>([]);
@@ -54,6 +55,8 @@ export const Photos = () => {
   const [deleteImageIndex, setDeleteImageIndex] = useState(NaN);
   const [isAlbumOpen, setIsAlbumOpen] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState({});
+  const [filteredImages, setFilteredImages] = useState([]);
+  const [isSearched, setIsSearched] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -163,20 +166,59 @@ export const Photos = () => {
 
   const onAlbumDeleteConfirmed = () => {};
 
-  const onSortChange = () => {};
+  const onSearchImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSearched(true);
+    const searchQuery = e.target.value.toLowerCase();
+    const foundImages = userImages.filter(image =>
+      image.title.toLowerCase().includes(searchQuery)
+    );
+    setFilteredImages(foundImages);
+  };
+
+  const onAddNewAlbum = () => {};
+
+  const onSortChange = (sort: string) => {
+    switch (sort) {
+      case 'sooner':
+        setUserImages(images => {
+          return images.sort(
+            (img1, img2) =>
+              new Date(img2.date).getTime() - new Date(img1.date).getTime()
+          );
+        });
+        break;
+
+      case 'later':
+        setUserImages(images => {
+          return images.sort(
+            (img1, img2) =>
+              new Date(img1.date).getTime() - new Date(img2.date).getTime()
+          );
+        });
+        break;
+
+      case 'start':
+        break;
+
+      case 'end':
+        break;
+
+      default:
+        break;
+    }
+  };
   return (
     <div>
-      <Tabs defaultValue='photos' className='p-5'>
-        <div className='w-full flex justify-between'>
+      <Tabs defaultValue='photos' className='p-5 min-w-3xl'>
+        <div className='w-full flex justify-between gap-3'>
           <TabsList>
             <TabsTrigger value='photos'>🖼️ Изображения </TabsTrigger>
             <TabsTrigger value='albums'>Альбомы</TabsTrigger>
           </TabsList>
           <div className='flex gap-3'>
-            <Dialog onOpenChange={() => onAddDialogClose()}>
-              <DialogTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
                 <Button
-                  type='submit'
                   className='flex gap-2'
                   onClick={() => {
                     onAddDialogOpen;
@@ -184,50 +226,118 @@ export const Photos = () => {
                   <CiCirclePlus className='w-6 h-6' />
                   <span>Добавить</span>
                 </Button>
-              </DialogTrigger>
-              <DialogContent className='sm:max-w-[425px]'>
-                <DialogHeader>
-                  <DialogTitle>🖼️ Добавить изображение</DialogTitle>
-                  <DialogDescription>
-                    Дайте название и выберите файл (или перетащите его в
-                    выделенную область):
-                  </DialogDescription>
-                </DialogHeader>
-                <div className='flex flex-col gap-4 py-4'>
-                  <Input
-                    id='title'
-                    placeholder='Название изображения...'
-                    className='col-span-3'
-                    onChange={e => setAddImageTitle(e.target.value)}
-                  />
-                  <div
-                    className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
-                    {...getRootProps()}>
-                    <input type='file' id='files' {...getInputProps()} />
-                    <div
-                      className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
-                      <BiLandscape className='w-12 h-12' />
-                      Выберите или перетащите изображение
-                    </div>
-                    <img
-                      src={selectedFileURL}
-                      className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className='flex flex-col gap-3'>
+                <Dialog onOpenChange={() => onAddDialogClose()}>
+                  <DialogTrigger>
                     <Button
-                      type='submit'
-                      className='flex gap-2 items-center'
-                      onClick={() => onAddFormSubmit()}>
-                      <BiSolidSave />
-                      Сохранить
+                      variant='secondary'
+                      className='flex gap-2 w-full'
+                      onClick={() => {
+                        onAddDialogOpen;
+                      }}>
+                      <span>Изображение</span>
                     </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  </DialogTrigger>
+                  <DialogContent className='sm:max-w-[425px]'>
+                    <DialogHeader>
+                      <DialogTitle>🖼️ Добавить изображение</DialogTitle>
+                      <DialogDescription>
+                        Дайте название и выберите файл (или перетащите его в
+                        выделенную область):
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className='flex flex-col gap-4 py-4'>
+                      <Input
+                        id='title'
+                        placeholder='Название изображения...'
+                        className='col-span-3'
+                        onChange={e => setAddImageTitle(e.target.value)}
+                      />
+                      <div
+                        className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
+                        {...getRootProps()}>
+                        <input type='file' id='files' {...getInputProps()} />
+                        <div
+                          className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
+                          <BiLandscape className='w-12 h-12' />
+                          Выберите или перетащите изображение
+                        </div>
+                        <img
+                          src={selectedFileURL}
+                          className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose>
+                        <Button
+                          type='submit'
+                          className='flex gap-2 items-center'
+                          onClick={() => onAddFormSubmit()}>
+                          <BiSolidSave />
+                          Сохранить
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Dialog onOpenChange={() => onAddDialogClose()}>
+                  <DialogTrigger>
+                    <Button
+                      variant='secondary'
+                      className='flex gap-2 w-full'
+                      onClick={() => {
+                        onAddDialogOpen;
+                      }}>
+                      <span>Альбом</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className='sm:max-w-[425px]'>
+                    <DialogHeader>
+                      <DialogTitle>🖼️ Добавить альбом</DialogTitle>
+                      <DialogDescription>
+                        Дайте название и выберите файл (или перетащите его в
+                        выделенную область):
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className='flex flex-col gap-4 py-4'>
+                      <Input
+                        id='title'
+                        placeholder='Название альбома...'
+                        className='col-span-3'
+                        onChange={e => setAddImageTitle(e.target.value)}
+                      />
+                      <div
+                        className='h-64 border-4 border-dashed rounded-xl flex flex-col items-center justify-center'
+                        {...getRootProps()}>
+                        <input type='file' id='files' {...getInputProps()} />
+                        <div
+                          className={`${isFileSelected ? 'hidden' : 'block'} flex flex-col items-center`}>
+                          <BiLandscape className='w-12 h-12' />
+                          Выберите или перетащите изображение
+                        </div>
+                        <img
+                          src={selectedFileURL}
+                          className={`${isFileSelected ? 'block' : 'hidden'} w-full h-full object-fill rounded-xl p-1`}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose>
+                        <Button
+                          type='submit'
+                          className='flex gap-2 items-center'
+                          onClick={() => onAddNewAlbum()}>
+                          <BiSolidSave />
+                          Сохранить
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <Button
@@ -242,18 +352,27 @@ export const Photos = () => {
               <DropdownMenuContent>
                 <DropdownMenuLabel>По дате создания</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className='hover:bg-gray-300'>
+                <DropdownMenuItem
+                  className='hover:bg-gray-300'
+                  onClick={() => onSortChange('sooner')}>
                   Раньше
                 </DropdownMenuItem>
-                <DropdownMenuItem className='hover:bg-gray-300'>
+                <DropdownMenuItem
+                  className='hover:bg-gray-300'
+                  onClick={() => onSortChange('later')}>
                   Позже
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuLabel>По названию</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className='hover:bg-gray-300'>
+                <DropdownMenuItem
+                  className='hover:bg-gray-300'
+                  onClick={() => onSortChange('start')}>
                   С начала алфавита
                 </DropdownMenuItem>
-                <DropdownMenuItem className='hover:bg-gray-300'>
+                <DropdownMenuItem
+                  className='hover:bg-gray-300'
+                  onClick={() => onSortChange('end')}>
                   С конца алфавита
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -267,7 +386,7 @@ export const Photos = () => {
                     alt=''
                   />
                   <div className='flex p-3 gap-3 flex-row-reverse'>
-                    <div className='flex flex-col'></div>
+                    <span></span>
                     <Button variant='ghost' className='text-sm'>
                       ↗ Поделиться
                     </Button>
@@ -304,32 +423,56 @@ export const Photos = () => {
             </Dialog>
           </div>
         </div>
-        <TabsContent value='photos' className='slide-in-left'>
-          <Card>
+        <TabsContent value='photos' className='slide-in-left min-h-[50vh]'>
+          <Card className='min-h-[50vh]'>
             <CardHeader>
               <CardTitle>Ваши изображения</CardTitle>
               <CardDescription>
                 Здесь можно просматривать и делиться фотографиями
               </CardDescription>
+              <Input
+                placeholder='🔍 Найти фотографию...'
+                onChange={e => onSearchImage(e)}
+              />
             </CardHeader>
             <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16'>
-              {userImages &&
-                userImages.map((photo, index) => (
-                  <div key={nanoid()} className='flex flex-col items-center'>
-                    <img
-                      className='w-52 h-52 rounded-xl'
-                      src={photo.url}
-                      alt='User photo'
-                      onClick={() => onShowImageDialog(photo.url, index)}
-                    />
-                    <span>{photo.title}</span>
-                  </div>
-                ))}
+              {userImages.length ? (
+                userImages && isSearched ? (
+                  filteredImages.map((photo, index) => (
+                    <div key={nanoid()} className='flex flex-col items-center'>
+                      <img
+                        className='w-52 h-52 rounded-xl'
+                        src={photo.url}
+                        alt='User photo'
+                        onClick={() => onShowImageDialog(photo.url, index)}
+                      />
+                      <span>{photo.title}</span>
+                    </div>
+                  ))
+                ) : (
+                  userImages.map((photo, index) => (
+                    <div key={nanoid()} className='flex flex-col items-center'>
+                      <img
+                        className='w-52 h-52 rounded-xl'
+                        src={photo.url}
+                        alt='User photo'
+                        onClick={() => onShowImageDialog(photo.url, index)}
+                      />
+                      <span>{photo.title}</span>
+                    </div>
+                  ))
+                )
+              ) : (
+                <div className='flex flex-col items-center col-span-3 mx-auto h-full'>
+                  <Emoji className='text-5xl'>😟</Emoji>
+                  <span>У вас нет фотографий</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value='albums' className='slide-in-right'>
-          <Card>
+        <TabsContent value='albums' className='slide-in-right min-h-[50vh]'>
+          <Card className='min-h-[50vh]'>
             <CardHeader>
               <CardTitle>Ваши альбомы</CardTitle>
               <CardDescription>
@@ -338,7 +481,8 @@ export const Photos = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16 grid-flow-row'>
-              {userAlbums &&
+              {userAlbums.length ? (
+                userAlbums &&
                 userAlbums.map(album => (
                   <div
                     key={nanoid()}
@@ -351,7 +495,13 @@ export const Photos = () => {
                     />
                     <span className='z-10'>{album.title}</span>
                   </div>
-                ))}
+                ))
+              ) : (
+                <div className='flex flex-col items-center justify-center col-span-3 mx-auto h-full'>
+                  <Emoji className='text-5xl'>🥺</Emoji>
+                  <span>У вас нет альбомов</span>
+                </div>
+              )}
             </CardContent>
           </Card>
           <Dialog open={isAlbumOpen} onOpenChange={setIsAlbumOpen}>

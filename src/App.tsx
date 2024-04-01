@@ -11,6 +11,7 @@ import { Photos } from './pages/Photos';
 import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
 import { Profile } from './pages/Profile';
+import { Friends } from './pages/Friends';
 
 const routes = [
   { path: '/sign_in', element: <SignIn /> },
@@ -38,6 +39,7 @@ function App() {
         <Route path='/chats' element={<Chats />} />
         <Route path='/ai' element={<AIBot />} />
         <Route path='/profile' element={<Profile />} />
+        <Route path='/friends' element={<Friends />} />
       </Route>
     </Routes>
   );

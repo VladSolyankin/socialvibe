@@ -18,6 +18,8 @@ import { MdOutlinePhotoSizeSelectActual } from 'react-icons/md';
 import { PiHeadphones } from 'react-icons/pi';
 import { RiHomeSmile2Line, RiMessage3Line } from 'react-icons/ri';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { FaUserFriends } from 'react-icons/fa';
+import { useUserLogOut } from '@/lib/firebase/auth';
 
 export const DesktopLayout = () => {
   const { toast } = useToast();
@@ -34,6 +36,11 @@ export const DesktopLayout = () => {
       localStorage.removeItem('isLogged');
     }
   }, []);
+
+  const onUserLogout = () => {
+    useUserLogOut();
+    pageNavigator('/sign_in');
+  };
   return (
     <div className='w-full'>
       <div className='flex items-center justify-center m-8 min-h-screen'>
@@ -82,6 +89,14 @@ export const DesktopLayout = () => {
                 </Label>
               </li>
               <li className='flex justify-center items-center max-w-max p-2 gap-2 hover:bg-blue-400 hover:rounded-xl'>
+                <FaUserFriends className='w-6 h-6' />
+                <Label
+                  className='text-lg'
+                  onClick={() => pageNavigator('/friends')}>
+                  Друзья
+                </Label>
+              </li>
+              <li className='flex justify-center items-center max-w-max p-2 gap-2 hover:bg-blue-400 hover:rounded-xl'>
                 <RiMessage3Line className='w-6 h-6' />
                 <Label
                   className='text-lg'
@@ -113,7 +128,10 @@ export const DesktopLayout = () => {
               </li>
             </ul>
           </div>
-          <Button className='fixed bottom-5 right-5' variant='destructive'>
+          <Button
+            className='fixed bottom-5 right-5'
+            variant='destructive'
+            onClick={() => onUserLogout()}>
             Выйти
           </Button>
         </SheetContent>

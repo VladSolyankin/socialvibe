@@ -1,6 +1,7 @@
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut,
 } from 'firebase/auth';
 import { auth } from '../config';
 
@@ -23,4 +24,9 @@ export const useUserSignUp = async (email: string, password: string) => {
       console.log(`${userCredentials.user.uid} user created`);
     }
   );
+};
+
+export const useUserLogOut = async () => {
+  await signOut(auth).then(() => console.log('signed out'));
+  localStorage.clear();
 };

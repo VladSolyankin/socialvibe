@@ -16,6 +16,16 @@ import { ref, uploadBytes } from 'firebase/storage';
 
 const storageUserId = localStorage.getItem('userAuth');
 
+export const getAllUsers = async () => {
+  const users = [];
+  const usersSnapshot = await getDocs(query(collection(db, '/users')));
+
+  usersSnapshot.forEach(user => {
+    users.push(user.data());
+  });
+
+  return users;
+};
 export const createUserDocument = async (
   userId: string | undefined,
   fullName: string,
@@ -25,6 +35,7 @@ export const createUserDocument = async (
   try {
     console.log('creating user');
     await setDoc(doc(db, `users/${userId}`), {
+      id: userId,
       avatar_url: '',
       email: userEmail,
       full_name: fullName,
@@ -72,7 +83,42 @@ export const getUsersProfileInfo = async () => {
   return usersData;
 };
 
-export const getUserFriends = () => {};
+export const addUserFriend = async (id: string) => {
+  const userRef = doc(db, `users/${storageUserId}`);
+  const userDoc = await getDoc(userRef);
+
+  const userFriends = userDoc.data().friends;
+
+  userFriends.push(id);
+
+  await updateDoc(userRef, { friends: userFriends });
+};
+
+export const deleteUserFriend = async (id: string) => {
+  const userRef = doc(db, `users/${storageUserId}`);
+  const userDoc = await getDoc(userRef);
+
+  const userFriends = userDoc.data().friends;
+
+  const filter = userFriends.filter((friendId: string) => friendId !== id);
+
+  await updateDoc(userRef, { friends: filter });
+};
+
+export const getUserFriends = async () => {
+  const userRef = doc(db, `users/${storageUserId}`);
+  const userDoc = await getDoc(userRef);
+
+  const friendsIds = userDoc.data().friends;
+
+  const friendsPromises = friendsIds.map(id => getDoc(doc(db, `/users/${id}`)));
+
+  const friendsData = (await Promise.all(friendsPromises))
+    .map(doc => doc.data())
+    .filter(data => data);
+
+  return friendsData;
+};
 
 export const getUserProfilePosts = () => {};
 
@@ -136,9 +182,9 @@ export const editUserMessage = () => {};
 // Фотографии
 
 export const getUserAlbums = async () => {
-  const userImages = await getDoc(doc(db, `users/${storageUserId}`));
+  const userAlbums = await getDoc(doc(db, `users/${storageUserId}`));
 
-  const data = await userImages.data()?.photos.albums;
+  const data = await userAlbums.data()?.photos.albums;
 
   return data;
 };
