@@ -87,3 +87,10 @@
  .slide-in-right {
   animation: slideInFromRight 1.5s ease-out forwards;
  }
+
+ * {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #5555FF #000000;
+  scroll-snap-type: mandatory;
+ }

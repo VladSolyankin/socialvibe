@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
@@ -31,9 +32,9 @@ export const AIBot = () => {
         };
         setBotMessages(prev => [...prev, `Ответ на: ${currentMessage}`]);
         setMessages(prevMessages => [...prevMessages, newBotMessage]);
+        setCurrentMessage('');
         setIsLoading(false);
       }, 1000);
-      setCurrentMessage('');
     }
   };
 
@@ -62,18 +63,26 @@ export const AIBot = () => {
       <Card className='h-full w-[80%] overflow-auto'>
         <div className='px-5 pt-5'>
           {messages.map((message, index) => {
-            return isLoading ? (
-              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900'>
-                Ау
-              </div>
-            ) : (
+            const isLastMessage = index === messages.length - 1;
+            const isBotMessage = message.sender === 'bot';
+
+            console.log(message.sender);
+
+            return (
               <div
                 key={nanoid()}
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
-                <div
-                  className={`p-2 rounded-md ${message.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'}`}>
-                  {message.text}
-                </div>
+                {isLoading && isLastMessage ? (
+                  <div className='flex items-center gap-5'>
+                    <div className='animate-spin rounded-full h-8 w-8 border-t-2 border-l-2 border-blue-600'></div>
+                    <Label className='text-sm'>Бот думает...</Label>
+                  </div>
+                ) : (
+                  <div
+                    className={`p-2 rounded-md ${message.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'}`}>
+                    {message.text}
+                  </div>
+                )}
               </div>
             );
           })}

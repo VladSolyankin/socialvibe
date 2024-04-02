@@ -10,9 +10,10 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { db, storage, auth } from './config';
+import { db, storage, auth, rtdb } from './config';
 import { IUserPhotos } from '@/types';
 import { ref, uploadBytes } from 'firebase/storage';
+import { set, ref as dbRef, get } from 'firebase/database';
 
 const storageUserId = localStorage.getItem('userAuth');
 
@@ -236,3 +237,26 @@ export const deleteUserImage = async (index: number) => {
 // Нейро-чат
 
 export const getNeuroChatMessages = () => {};
+
+// RTDB
+
+export const initializeDatabaseUser = (friends: []) => {
+  const initializeChats = friends.map(friend => {
+    return {
+      members: [storageUserId, friend.id],
+      title: friends.full_name,
+      last_message: '',
+      messages: [],
+    };
+  });
+
+  set(dbRef(rtdb, '/users'), {
+    PjGJqlek1wMinTcVzO3L3MM9Vo03: {
+      chats: { ...initializeChats },
+    },
+  });
+};
+
+export const getDatabaseChats = () => {
+  get(dbRef(rtdb)).then(res => console.log(res.val()));
+};

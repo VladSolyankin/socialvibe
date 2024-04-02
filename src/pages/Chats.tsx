@@ -1,35 +1,48 @@
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Label } from '@/components/ui/label';
-import { Badge, Paperclip, Mic, CornerDownLeft } from 'lucide-react';
-import { useState } from 'react';
-import { ChatItem, MessageBox } from 'react-chat-elements';
+import {
+  getDatabaseChats,
+  getUserFriends,
+  initializeDatabaseUser,
+} from '@/lib/firebase';
+import { CornerDownLeft, Mic, Paperclip } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChatItem } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
 import { BsFilterRight } from 'react-icons/bs';
 import { MdAddCircleOutline } from 'react-icons/md';
 
 export const Chats = () => {
   const [userChats, setUserChats] = useState<IUserChats[]>();
+  const [userFriends, setUserFriends] = useState([]);
+
+  useEffect(() => {
+    fetchedFriends();
+    getDatabaseChats();
+    initializeDatabaseUser(userFriends);
+  }, []);
+
+  const fetchedFriends = async () => {
+    const fetch = await getUserFriends();
+    setUserFriends(() => fetch);
+  };
+
   return (
     <div className='mt-4 h-screen max-w-5xl'>
       <CardContent className='h-full grid grid-cols-3 gap-6'>
@@ -54,29 +67,27 @@ export const Chats = () => {
             Здесь вы можете общаться с друзьями или группами людей
           </CardDescription>
           <Input placeholder='🔍 Найти чат...' />
-          <div>
-            <ChatItem
-              className='text-black'
-              avatar={
-                'https://firebasestorage.googleapis.com/v0/b/socialvibe-92a74.appspot.com/o/cat.jpg?alt=media&token=ee01de80-84c0-4f6f-843b-a8ae4495443a'
-              }
-              alt={'Reactjs'}
-              title={'Hello'}
-              subtitle={'What are you doing?'}
-              date={new Date()}
-              unread={0}
-            />
-            <ChatItem
-              className='text-black'
-              avatar={
-                'https://firebasestorage.googleapis.com/v0/b/socialvibe-92a74.appspot.com/o/cat.jpg?alt=media&token=ee01de80-84c0-4f6f-843b-a8ae4495443a'
-              }
-              alt={'Reactjs'}
-              title={'Hello'}
-              subtitle={'What are you doing?'}
-              date={new Date()}
-              unread={0}
-            />
+          <div className='flex flex-col gap-1'>
+            {userFriends.map(friend => {
+              return (
+                <div>
+                  <ChatItem
+                    className='text-black rounded-lg focus-within:ring-1'
+                    avatar={
+                      friend.avatar_url
+                        ? friend.avatar_url
+                        : 'assets/default_profile.png'
+                    }
+                    alt={'Reactjs'}
+                    title={friend.full_name}
+                    subtitle={'What are you doing?'}
+                    date={new Date()}
+                    unread={0}
+                  />
+                  <Separator />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -123,3 +134,28 @@ export const Chats = () => {
     </div>
   );
 };
+
+/*
+
+users:
+  user1:
+    chat1:
+      title:
+      last_message:
+      last_time_sent:
+    chat2:
+
+    messages:
+      chat1:
+        m1
+        m2
+        m3
+      chat2:
+        m1
+        m2
+        ...
+    
+  user2:
+    chat1:
+    chat2:
+*/

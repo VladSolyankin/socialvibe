@@ -12,6 +12,7 @@ import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
 import { Profile } from './pages/Profile';
 import { Friends } from './pages/Friends';
+import { Test } from './pages/Test';
 
 const routes = [
   { path: '/sign_in', element: <SignIn /> },
@@ -40,6 +41,7 @@ function App() {
         <Route path='/ai' element={<AIBot />} />
         <Route path='/profile' element={<Profile />} />
         <Route path='/friends' element={<Friends />} />
+        <Route path='/test' element={<Test />} />
       </Route>
     </Routes>
   );
