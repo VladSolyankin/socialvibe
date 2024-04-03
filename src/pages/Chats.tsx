@@ -17,30 +17,60 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
+  addNewChat,
   getDatabaseChats,
   getUserFriends,
   initializeDatabaseUser,
 } from '@/lib/firebase';
 import { CornerDownLeft, Mic, Paperclip } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChatItem } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
 import { BsFilterRight } from 'react-icons/bs';
 import { MdAddCircleOutline } from 'react-icons/md';
+import Emoji from 'react-emoji-render';
 
 export const Chats = () => {
   const [userChats, setUserChats] = useState<IUserChats[]>();
   const [userFriends, setUserFriends] = useState([]);
+  const [isChatVisible, setIsChatVisible] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState('');
 
   useEffect(() => {
     fetchedFriends();
-    getDatabaseChats();
-    initializeDatabaseUser(userFriends);
   }, []);
+
+  useEffect(() => {
+    initializeChats();
+  });
+
+  const initializeChats = async () => {
+    await getDatabaseChats();
+    await initializeDatabaseUser(userFriends);
+  };
 
   const fetchedFriends = async () => {
     const fetch = await getUserFriends();
     setUserFriends(() => fetch);
+  };
+
+  const onChatSelect = async () => {
+    setIsChatVisible(true);
+  };
+
+  const onChatSearch = async () => {};
+
+  const onMessageSend = () => {
+    setCurrentMessage('');
+    console.log(1);
+  };
+
+  const onMessageChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCurrentMessage(e.target.value);
+  };
+
+  const onAddNewChat = async () => {
+    await addNewChat();
   };
 
   return (
@@ -56,7 +86,9 @@ export const Chats = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem className='flex gap-1 items-center'>
+                <DropdownMenuItem
+                  className='flex gap-1 items-center'
+                  onClick={onAddNewChat}>
                   <MdAddCircleOutline className='w-4 h-4' />
                   Создать новый чат
                 </DropdownMenuItem>
@@ -72,7 +104,7 @@ export const Chats = () => {
               return (
                 <div>
                   <ChatItem
-                    className='text-black rounded-lg focus-within:ring-1'
+                    className='text-black rounded-lg focus-within:ring-1 hover:ring-2 ring-blue-400'
                     avatar={
                       friend.avatar_url
                         ? friend.avatar_url
@@ -83,53 +115,65 @@ export const Chats = () => {
                     subtitle={'What are you doing?'}
                     date={new Date()}
                     unread={0}
+                    onClick={() => onChatSelect()}
                   />
-                  <Separator />
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div className='relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-2'>
-          <div className='flex-1' />
-          <div className='relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring'>
-            <Label htmlFor='message' className='sr-only'>
-              Message
-            </Label>
-            <Textarea
-              id='message'
-              placeholder='Введите ваше сообщение...'
-              className='min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0'
-            />
-            <div className='flex items-center p-3 pt-0'>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant='ghost' size='icon'>
-                      <Paperclip className='size-4' />
-                      <span className='sr-only'>Прикрепить файл</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side='top'>Прикрепить файл</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant='ghost' size='icon'>
-                      <Mic className='size-4' />
-                      <span className='sr-only'>Голосовой ввод</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side='top'>Голосовой ввод</TooltipContent>
-                </Tooltip>
-                <Button size='sm' className='ml-auto gap-1.5'>
-                  Отправить
-                  <CornerDownLeft className='size-3.5' />
-                </Button>
-              </TooltipProvider>
+        {isChatVisible ? (
+          <div className='relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-2'>
+            <div className='flex-1'></div>
+            <div className='relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring'>
+              <Label htmlFor='message' className='sr-only'>
+                Message
+              </Label>
+              <Textarea
+                value={currentMessage}
+                id='message'
+                placeholder='Введите ваше сообщение...'
+                className='min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0'
+                onChange={e => onMessageChanged(e)}
+              />
+              <div className='flex items-center p-3 pt-0'>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant='ghost' size='icon'>
+                        <Paperclip className='size-4' />
+                        <span className='sr-only'>Прикрепить файл</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side='top'>Прикрепить файл</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant='ghost' size='icon'>
+                        <Mic className='size-4' />
+                        <span className='sr-only'>Голосовой ввод</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side='top'>Голосовой ввод</TooltipContent>
+                  </Tooltip>
+                  <Button
+                    size='sm'
+                    className='ml-auto gap-1.5'
+                    onClick={() => onMessageSend()}>
+                    Отправить
+                    <CornerDownLeft className='size-3.5' />
+                  </Button>
+                </TooltipProvider>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className='relative flex h-full min-h-[50vh] flex-col justify-center items-center gap-5 rounded-xl bg-muted/50 p-4 lg:col-span-2'>
+            <Emoji className='text-5xl'>👈😎</Emoji>
+            <span className='text-lg'>Выбери, с кем ты будешь общаться</span>
+          </div>
+        )}
       </CardContent>
     </div>
   );

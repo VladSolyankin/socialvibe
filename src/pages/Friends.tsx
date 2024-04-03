@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { nanoid } from 'nanoid';
+import { Separator } from '@/components/ui/separator';
 
 export const Friends = () => {
   const [users, setUsers] = useState([]);
@@ -125,11 +126,11 @@ export const Friends = () => {
             <Card className='flex flex-col h-full p-5'>
               {friends.length ? (
                 (isSearched ? filteredFriends : friends).length ? (
-                  <div>
+                  <div className='flex flex-col gap-5'>
                     {(isSearched ? filteredFriends : friends).map(friend => (
-                      <div
+                      <Card
                         key={nanoid()}
-                        className='flex items-center justify-between gap-5 w-full'>
+                        className='flex items-center justify-between gap-5 w-full p-3'>
                         <div className='flex gap-5 items-center'>
                           <img
                             src={
@@ -176,7 +177,7 @@ export const Friends = () => {
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
-                      </div>
+                      </Card>
                     ))}
                   </div>
                 ) : (
@@ -210,11 +211,11 @@ export const Friends = () => {
             <Card className='flex flex-col h-full p-5'>
               {users.length ? (
                 (isSearched ? filteredFriends : friends) ? (
-                  <div>
+                  <div className='flex flex-col gap-5'>
                     {(isSearched ? filteredUsers : users).map(user => (
-                      <div
+                      <Card
                         key={nanoid()}
-                        className='flex items-center justify-between gap-5 w-full'>
+                        className='flex items-center justify-between gap-5 w-full p-3'>
                         <div className='flex gap-5 items-center'>
                           <img
                             src={
@@ -228,7 +229,8 @@ export const Friends = () => {
                           <span>{user.full_name}</span>
                         </div>
 
-                        {userProfile.friends.includes(user.id) ? (
+                        {userProfile.friends &&
+                        userProfile.friends.includes(user.id) ? (
                           <Label className='text-sm text-blue-500'>
                             Уже в друзьях
                           </Label>
@@ -263,7 +265,7 @@ export const Friends = () => {
                             </DialogContent>
                           </Dialog>
                         )}
-                      </div>
+                      </Card>
                     ))}
                   </div>
                 ) : (

@@ -13,7 +13,7 @@ import {
 import { db, storage, auth, rtdb } from './config';
 import { IUserPhotos } from '@/types';
 import { ref, uploadBytes } from 'firebase/storage';
-import { set, ref as dbRef, get } from 'firebase/database';
+import { set, ref as dbRef, get, child, update } from 'firebase/database';
 
 const storageUserId = localStorage.getItem('userAuth');
 
@@ -240,21 +240,44 @@ export const getNeuroChatMessages = () => {};
 
 // RTDB
 
-export const initializeDatabaseUser = (friends: []) => {
-  const initializeChats = friends.map(friend => {
+export const initializeDatabaseUser = friends => {
+  const chats = friends.map((friend, index: number) => {
     return {
-      members: [storageUserId, friend.id],
-      title: friends.full_name,
-      last_message: '',
-      messages: [],
+      title: friend.full_name,
+      members: [friend.id, storageUserId],
     };
   });
 
-  set(dbRef(rtdb, '/users'), {
-    PjGJqlek1wMinTcVzO3L3MM9Vo03: {
-      chats: { ...initializeChats },
-    },
+  const chatObject = Object.assign({}, ...chats);
+
+  get(child(dbRef(rtdb), `/users/${storageUserId}/chats`)).then(res => {
+    const updates = {};
+    updates[`users/${storageUserId}/chats`] = { ...res.val(), ...chats };
+    update(dbRef(rtdb), updates);
   });
+};
+
+export const addNewChat = (title: string = 'title', members: [] = []) => {
+  get(child(dbRef(rtdb), `/users/${storageUserId}/chats`)).then(res => {
+    const lastChatIndex: number = Object.keys(res.val()).length;
+    const newChat = {
+      title: title,
+      members: [...members, storageUserId],
+    };
+    const updates = {};
+    updates[`users/${storageUserId}/chats/${lastChatIndex}`] = newChat;
+    update(dbRef(rtdb), updates);
+  });
+};
+
+export const addNewChatMessage = (chatIndex: number) => {
+  get(child(dbRef(rtdb), `/users/${storageUserId}/chats/${chatIndex}`)).then(
+    res => {
+      const updates = {};
+      updates[`users/${storageUserId}/chats/${lastChatIndex}`] = newChat;
+      update(dbRef(rtdb), updates);
+    }
+  );
 };
 
 export const getDatabaseChats = () => {

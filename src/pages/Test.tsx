@@ -1,4 +1,4 @@
-import { initializeDatabaseUser } from '@/lib/firebase';
+import { addNewChat, initializeDatabaseUser } from '@/lib/firebase';
 import { HfAgent, LLMFromHub, defaultTools } from '@huggingface/agents';
 import { HfInference } from '@huggingface/inference';
 import { useEffect } from 'react';
@@ -18,7 +18,7 @@ export const Test = () => {
       console.log(response);
     })();
 
-    initializeDatabaseUser();
+    addNewChat();
   }, []);
   return <div className='flex flex-col items-center gap-10 w-[50vw]'></div>;
 };
