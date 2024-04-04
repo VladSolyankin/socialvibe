@@ -75,7 +75,7 @@ async function getTracksByIds(ids) {
     throw error;
   }
 }
-
+// TODO: type=track
 async function getPlaylists(query) {
   try {
     const token = await getSpotifyToken();
