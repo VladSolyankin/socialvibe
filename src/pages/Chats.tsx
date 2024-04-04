@@ -62,7 +62,6 @@ export const Chats = () => {
 
   const onMessageSend = () => {
     setCurrentMessage('');
-    console.log(1);
   };
 
   const onMessageChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

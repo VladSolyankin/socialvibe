@@ -435,8 +435,8 @@ export const Photos = () => {
                 onChange={e => onSearchImage(e)}
               />
             </CardHeader>
-            <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16'>
-              {userImages.length ? (
+            <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16 mx-5'>
+              {userImages && userImages.length > 0 ? (
                 userImages && isSearched ? (
                   filteredImages.map((photo, index) => (
                     <div key={nanoid()} className='flex flex-col items-center'>
@@ -481,7 +481,7 @@ export const Photos = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className='grid grid-cols-3 place-content-center gap-x-12 gap-y-16 grid-flow-row'>
-              {userAlbums.length ? (
+              {userAlbums && userAlbums.length > 0 ? (
                 userAlbums &&
                 userAlbums.map(album => (
                   <div

@@ -21,7 +21,7 @@
         "./public/*"
       ],
       "@/lib/utils": [
-        "./src/lib/utils.ts"
+        "src/lib/utils.ts"
       ],
     },
     "target": "ES2020",

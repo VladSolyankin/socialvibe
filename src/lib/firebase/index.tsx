@@ -274,7 +274,7 @@ export const addNewChatMessage = (chatIndex: number) => {
   get(child(dbRef(rtdb), `/users/${storageUserId}/chats/${chatIndex}`)).then(
     res => {
       const updates = {};
-      updates[`users/${storageUserId}/chats/${lastChatIndex}`] = newChat;
+      updates[`users/${storageUserId}/chats/${chatIndex}`] = newChat;
       update(dbRef(rtdb), updates);
     }
   );

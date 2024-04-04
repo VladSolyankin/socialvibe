@@ -1,4 +1,5 @@
 import { addNewChat, initializeDatabaseUser } from '@/lib/firebase';
+import { getAllArtists } from '@/lib/spotify';
 import { HfAgent, LLMFromHub, defaultTools } from '@huggingface/agents';
 import { HfInference } from '@huggingface/inference';
 import { useEffect } from 'react';
@@ -18,7 +19,7 @@ export const Test = () => {
       console.log(response);
     })();
 
-    addNewChat();
+    getAllArtists('arist').then(res => console.log(res));
   }, []);
   return <div className='flex flex-col items-center gap-10 w-[50vw]'></div>;
 };

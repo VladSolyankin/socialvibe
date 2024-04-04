@@ -88,60 +88,61 @@ export const News = () => {
           </div>
         </div>
       </div>
-      {userPosts.map((post: IUserPost) => {
-        return (
-          <Card
-            key={nanoid()}
-            className='flex flex-col gap-3 border-2 w-[35vw]'>
-            <div className='flex flex-col p-2 gap-3'>
-              <div className='flex items-center gap-3'>
-                <img
-                  src={true ? 'assets/default_profile.png' : ''}
-                  alt=''
-                  className='w-10 h-10'
-                />
-                <span>{post.full_name}</span>
-                <span className='ml-auto'>
-                  {post.date.toDate().toLocaleString().replace(',', ' •')}
-                </span>
-              </div>
-              <div>{post.content}</div>
-              <img src={post.images[0]} alt='' className='rounded-xl' />
-              <div className='flex gap-3'>
-                {false ? (
-                  <FaRegHeart className='w-6 h-6' />
-                ) : (
-                  <FcLike className='w-6 h-6' />
-                )}
+      {userPosts.length > 0 &&
+        userPosts.map((post: IUserPost) => {
+          return (
+            <Card
+              key={nanoid()}
+              className='flex flex-col gap-3 border-2 w-[35vw]'>
+              <div className='flex flex-col p-2 gap-3'>
+                <div className='flex items-center gap-3'>
+                  <img
+                    src={true ? 'assets/default_profile.png' : ''}
+                    alt=''
+                    className='w-10 h-10'
+                  />
+                  <span>{post.full_name}</span>
+                  <span className='ml-auto'>
+                    {post.date.toDate().toLocaleString().replace(',', ' •')}
+                  </span>
+                </div>
+                <div>{post.content}</div>
+                <img src={post.images[0]} alt='' className='rounded-xl' />
+                <div className='flex gap-3'>
+                  {false ? (
+                    <FaRegHeart className='w-6 h-6' />
+                  ) : (
+                    <FcLike className='w-6 h-6' />
+                  )}
 
-                <FaRegComment className='w-6 h-6' />
-                <div className='flex flex-col'></div>
+                  <FaRegComment className='w-6 h-6' />
+                  <div className='flex flex-col'></div>
+                </div>
               </div>
-            </div>
-            <div id='post-buttons' className=''></div>
-            <div id='comments'>
-              {post.comments.map(comment => {
-                return (
-                  <div
-                    key={nanoid()}
-                    id='comment'
-                    className='flex items-center border-t-2 border-gray-800 p-2 gap-3'>
-                    <img
-                      src={true ? 'assets/default_profile.png' : ''}
-                      className='w-8 h-8'
-                      alt=''
-                    />
-                    <div>
-                      <span className='text-blue-500'>Some user</span>
-                      <p className='text-sm'>{comment.content}</p>
+              <div id='post-buttons' className=''></div>
+              <div id='comments'>
+                {post.comments.map(comment => {
+                  return (
+                    <div
+                      key={nanoid()}
+                      id='comment'
+                      className='flex items-center border-t-2 border-gray-800 p-2 gap-3'>
+                      <img
+                        src={true ? 'assets/default_profile.png' : ''}
+                        className='w-8 h-8'
+                        alt=''
+                      />
+                      <div>
+                        <span className='text-blue-500'>Some user</span>
+                        <p className='text-sm'>{comment.content}</p>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        );
-      })}
+                  );
+                })}
+              </div>
+            </Card>
+          );
+        })}
     </div>
   );
 };
