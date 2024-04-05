@@ -78,6 +78,7 @@ export const Music = () => {
   const onTrackPlay = track => {
     setCurrentTrack(track);
     setIsPlayerVisible(true);
+    setIsPlaylistOpen(false);
     if (!isPlaying) {
       audioRef.current.play();
       setIsPlaying(true);
@@ -200,7 +201,7 @@ export const Music = () => {
             </Carousel>
           </TabsContent>
           <Dialog open={isPlaylistOpen} onOpenChange={setIsPlaylistOpen}>
-            <DialogContent className='h-[calc(100vh-64px)] overflow-y-auto'>
+            <DialogContent className=' min-w-[50vw] h-[calc(100vh-64px)] overflow-y-auto'>
               <DialogHeader>
                 <DialogTitle>
                   {currentPlaylist.name ? currentPlaylist.name : `Плейлист 🔥`}

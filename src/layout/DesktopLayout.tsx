@@ -67,17 +67,15 @@ export const DesktopLayout = () => {
             </div>
           </SheetHeader>
           <div className='basis-1/6'>
-            <div className='flex justify-center items-center my-5 gap-3 p-2'>
+            <div
+              className='flex justify-center items-center my-5 gap-3 p-2'
+              onClick={() => pageNavigator('/profile')}>
               <img
                 className='w-10 h-10'
                 src={true ? '/assets/default_profile.png' : ''}
                 alt=''
               />
-              <Label
-                className='text-lg'
-                onClick={() => pageNavigator('/profile')}>
-                Профиль
-              </Label>
+              <Label className='text-lg'>Профиль</Label>
             </div>
             <ul className='flex flex-col items-start w-[150px]'>
               <li className='flex justify-center items-center max-w-max p-2 gap-2 hover:bg-blue-400 hover:rounded-xl'>
